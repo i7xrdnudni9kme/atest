@@ -322,7 +322,7 @@ protocol: http2
 
 ingress:
   - hostname: ${ARGO_DOMAIN}
-    service: http://localhost:8080
+    service: http://localhost:2082
   - service: http_status:404
 EOF
 }
@@ -344,7 +344,7 @@ install_argox() {
   elif [[ -n "${ARGO_TOKEN}" && -n "${ARGO_DOMAIN}" ]]; then
     ARGO_RUNS="$WORK_DIR/cloudflared tunnel --edge-ip-version auto --protocol http2 run --token ${ARGO_TOKEN}"
   else
-    ARGO_RUNS="$WORK_DIR/cloudflared tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --url http://localhost:8080"
+    ARGO_RUNS="$WORK_DIR/cloudflared tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --url http://localhost:2082"
   fi
 
   cat > /etc/systemd/system/argo.service << EOF
@@ -378,7 +378,7 @@ EOF
     "inbounds":[
         {
             "listen":"127.0.0.1",
-            "port":8080,
+            "port":2082,
             "protocol":"vless",
             "settings":{
                 "clients":[
@@ -694,7 +694,7 @@ EOF
 export_list() {
   check_install
 
-  if grep -q "^ExecStart.*8080$" /etc/systemd/system/argo.service; then
+  if grep -q "^ExecStart.*2082$" /etc/systemd/system/argo.service; then
     sleep 5 && ARGO_DOMAIN=$(wget -qO- http://$(ss -nltp | awk '/cloudflared/{print $4}')/quicktunnel | cut -d\" -f4)
   else
     ARGO_DOMAIN=${ARGO_DOMAIN:-"$(grep -m1 '^vless' $WORK_DIR/list | sed "s@.*host=\(.*\)&.*@\1@g")"}
